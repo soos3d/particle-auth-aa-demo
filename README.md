@@ -270,6 +270,9 @@ You can configure the smart account using the `aaOptions` object in `src/app/pag
   - `chainIds`, an array of chain IDs in which the smart account is expected to be used.
 
 ```ts
+
+import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
+
   // Set up and configure the smart account
   const smartAccount = new SmartAccount(provider, {
     projectId: process.env.REACT_APP_PROJECT_ID!,
@@ -280,7 +283,7 @@ You can configure the smart account using the `aaOptions` object in `src/app/pag
         SIMPLE: [
           {
             version: "2.0.0",
-            chainIds: [IoTeXTestnet.id, IoTeX.id],
+            chainIds: [sepolia.id, baseSepolia.id],
           },
         ],
       },
