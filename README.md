@@ -14,9 +14,7 @@
 
 This app allows you to log in using social logins and interact with the Ethereum Sepolia and Base Sepolia testnets by displaying account information and sending a transfer transaction to an address you can input in the UI. The user can select to send a gasless transaction or pay gas with the native token.
 
-> This demo showcases the upgrade process from the deprecated `auth-core-modal` SDK to the new `Authkit` SDK.
-
-> 🛠️ Try the Next JS demo: [Particle Auth Next.js AA demo](https://iotex-particle-auth-aa-demo.vercel.app/)
+> This demo guides you through upgrading from the deprecated `auth-core-modal` SDK to the new `AuthKit` SDK. Follow the instructions below to transition this demo app to `AuthKit seamlessly`.
 
 Built using:
 
@@ -75,12 +73,6 @@ This project requires several keys from Particle Network to be defined in `.env`
 - `NEXT_PUBLIC_CLIENT_KEY`, the ID of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
 -  `NEXT_PUBLIC_APP_ID`, the client key of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
 
-Use the following if you are setting up the React Native application
-
-- `REACT_APP_PROJECT_ID`, the ID of the corresponding application in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
-- `REACT_APP_CLIENT_KEY`, the ID of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
--  `REACT_APP_APP_ID`, the client key of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
-
 ### Start the project
 ```sh
 npm run dev
@@ -92,13 +84,155 @@ Or
 yarn dev
 ```
 
-## Development Next JS
+Here is an improved version of the README section for upgrading from `auth-core-modal` to `authkit`:
 
-Particle Auth config is in `src/app/layout.tsx`. 
+---
 
-## Development React
+## Upgrading to AuthKit in a Next.js Project
 
-Particle Auth config is in `src/app/index.tsx`. 
+To migrate from `auth-core-modal` to `AuthKit`, follow these steps:
+
+### Step 1: Install the Necessary Packages
+
+Run the following command to install the new packages required for the migration:
+
+```sh
+yarn add @particle-network/authkit @particle-network/wallet viem@2
+```
+
+### Step 2: Create a New `Authkit.tsx` Component
+
+In your `components` directory, create a new file called `Authkit.tsx`:
+
+```tsx
+"use client";
+
+// Particle imports
+import { AuthType } from "@particle-network/auth-core";
+import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
+import { AuthCoreContextProvider } from "@particle-network/authkit";
+import { EntryPosition } from "@particle-network/wallet";
+
+export const ParticleAuthkit = ({ children }: React.PropsWithChildren) => {
+  return (
+    <AuthCoreContextProvider
+      options={{
+        // These environment variables should be defined at runtime
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
+        clientKey: process.env.NEXT_PUBLIC_CLIENT_KEY!,
+        appId: process.env.NEXT_PUBLIC_APP_ID!,
+
+        chains: [sepolia, baseSepolia], // Configure the chains
+
+        // Limit the available authentication types (remove the array to allow all)
+        authTypes: [
+          AuthType.email,
+          AuthType.google,
+          AuthType.twitter,
+          AuthType.github,
+          AuthType.discord,
+          AuthType.phone,
+        ],
+        themeType: "dark", // Set the theme to dark mode
+        fiatCoin: "USD",
+        language: "en",
+
+        // Configure Smart Account settings
+        erc4337: {
+          name: "SIMPLE",
+          version: "2.0.0",
+        },
+        wallet: {
+          visible: true, // Set to false to disable the embedded wallet modal
+          entryPosition: EntryPosition.TL, // Set the entry position of the wallet modal
+          customStyle: {}, // Add custom styling if needed
+        },
+      }}
+    >
+      {children}
+    </AuthCoreContextProvider>
+  );
+};
+```
+
+### Key Changes in `AuthKit`
+
+- **Chain Imports**: Chains are now imported as `Viem` objects. This is a change from the previous `auth-core-modal` implementation.
+
+### Step 3: Update `layout.tsx`
+
+Import the new `ParticleAuthkit` component into your `layout.tsx` file to integrate it across your app:
+
+```tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
+
+import { ParticleAuthkit } from "./components/AuthKit";
+
+export const metadata: Metadata = {
+  title: "Particle Auth App",
+  description: "An application leveraging Particle Auth for social logins.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <ParticleAuthkit>{children}</ParticleAuthkit>
+      </body>
+    </html>
+  );
+}
+```
+
+### Step 4: Update `page.tsx` for Chain and Smart Account Configuration
+
+Modify your `page.tsx` to import the necessary hooks and update the chain objects:
+
+```tsx
+import {
+  useEthereum,
+  useConnect,
+  useAuthCore,
+} from "@particle-network/authkit";
+import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
+
+// Set up and configure the Smart Account
+const smartAccount = new SmartAccount(provider, {
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
+  clientKey: process.env.NEXT_PUBLIC_CLIENT_KEY!,
+  appId: process.env.NEXT_PUBLIC_APP_ID!,
+  aaOptions: {
+    accountContracts: {
+      SIMPLE: [
+        {
+          version: "2.0.0", // Supports versions 1.0.0 and 2.0.0
+          chainIds: [sepolia.id, baseSepolia.id],
+        },
+      ],
+    },
+  },
+});
+
+// UI Section Example
+
+<h3 className="text-lg mb-2 text-gray-400">
+  Chain: {chainInfo.name}
+</h3>
+
+<TxNotification
+  hash={transactionHash}
+  blockExplorerUrl={chainInfo.blockExplorers?.default.url}
+/>
+```
+
 
 ### Config social logins
 
