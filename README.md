@@ -7,94 +7,40 @@
   </h3>
 </div>
 
+# Migrating from `auth-core-modal` to AuthKit
 
-# Particle Auth, Account Abstraction SDK, Next.js, and ethers V6
+This repository demonstrates how to **upgrade from the deprecated `auth-core-modal` package to the new `@particle-network/authkit` SDK**.  
+It includes a working Next.js demo showing you:
 
-⚡️ Basic demo application using `@particle-network/authkit` and `@particle-network/aa` to initiate social login and send transactions via an account abstraction smart account.
+- How to replace your existing `auth-core-modal` setup with `AuthKit`.  
+- How to configure social logins, chain support, and smart accounts.  
+- How to send transactions using the `@particle-network/aa` SDK with ethers v6.  
 
-This app allows you to log in using social logins and interact with the Ethereum Sepolia and Base Sepolia testnets by displaying account information and sending a transfer transaction to an address you can input in the UI. The user can select to send a gasless transaction or pay gas with the native token.
-
-> This demo guides you through upgrading from the deprecated `auth-core-modal` SDK to the new `AuthKit` SDK. Follow the instructions below to transition this demo app to `AuthKit seamlessly`.
-
-Built using:
-
-- **Particle Auth Core**
-- **Particle AA SDK**
-- **ethers.js V6.x.x**
-- **TypeScript**
-- **Tailwind CSS**
-
-## 🔑 Particle Authkit
-
-Particle Authkit enables seamless onboarding to an application-embedded **MPC-TSS/AA** wallet facilitated by social login, such as Google, GitHub, email, phone number, etc.
-
-👉 Learn more about [Particle Auth](https://developers.particle.network/docs/building-with-particle-auth).
-
-## 🪪 Account Abstraction SDK
-
-Particle Network natively supports and facilitates the end-to-end utilization of ERC-4337 account abstraction. This is primarily done through the account abstraction SDK, which can construct, sponsor, and send UserOperations, deploy smart accounts, retrieve fee quotes, and perform other vital functions.
-
-> Every gasless transaction is automatically sponsored on testnet. On mainnet, you'll need to deposit USDT into Paymaster.
-
-👉 Learn more about the [Particle AA SDK](https://developers.particle.network/docs/aa-web-quickstart).
-
-***
-
-👉 Learn more about [Particle Network](https://particle.network).
-
-## 🛠️ Quickstart
-
-### Clone this repository
-```
-git clone https://github.com/soos3d/particle-auth-aa-demo.git
-```
-
-### Move into the app directory (Next JS)
-
-```sh
-cd particle-aa-nextjs
-```
-
-### Install dependencies
-
-```sh
-yarn install
-```
-
-Or
-
-```sh
-npm install
-```
-
-### Set environment variables
-This project requires several keys from Particle Network to be defined in `.env`. The following should be defined:
-- `NEXT_PUBLIC_PROJECT_ID`, the ID of the corresponding application in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
-- `NEXT_PUBLIC_CLIENT_KEY`, the ID of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
--  `NEXT_PUBLIC_APP_ID`, the client key of the corresponding project in your [Particle Network dashboard](https://dashboard.particle.network/#/applications).
-
-### Start the project
-```sh
-npm run dev
-```
-
-Or
-
-```sh
-yarn dev
-```
-
-Here is an improved version of the README section for upgrading from `auth-core-modal` to `authkit`:
+By following this guide, you’ll learn the exact changes needed to modernize your project and fully adopt AuthKit.
 
 ---
 
-## Upgrading to AuthKit in a Next.js Project
+## 🔑 Particle AuthKit
 
-To migrate from `auth-core-modal` to `AuthKit`, follow these steps:
+Particle AuthKit enables application-embedded onboarding into an **MPC-TSS/AA** wallet via social login (Google, GitHub, email, phone number, etc.).
 
-### Step 1: Install the Necessary Packages
+👉 Learn more about [Particle Auth](https://developers.particle.network/social-logins/auth/introduction).
 
-Run the following command to install the new packages required for the migration:
+## 🪪 Account Abstraction SDK
+
+Particle Network provides native support for ERC-4337 account abstraction. The AA SDK allows you to construct, sponsor, and send UserOperations, deploy smart accounts, retrieve fee quotes, and more.
+
+> On testnets, every gasless transaction is automatically sponsored. On mainnet, you’ll need to deposit USDT into Paymaster.
+
+👉 Learn more about the [Particle AA SDK](https://developers.particle.network/aa/introduction).
+
+---
+
+# 🛠️ Upgrading to AuthKit
+
+The steps below walk you through migrating this demo (and your own apps) from `auth-core-modal` to `@particle-network/authkit`.
+
+### Step 1: Install the New Packages
 
 ```sh
 yarn add @particle-network/authkit @particle-network/wallet viem@2
@@ -102,12 +48,11 @@ yarn add @particle-network/authkit @particle-network/wallet viem@2
 
 ### Step 2: Create a New `Authkit.tsx` Component
 
-In your `components` directory, create a new file called `Authkit.tsx`:
+In your components directory:
 
 ```tsx
 "use client";
 
-// Particle imports
 import { AuthType } from "@particle-network/auth-core";
 import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
 import { AuthCoreContextProvider } from "@particle-network/authkit";
@@ -117,14 +62,12 @@ export const ParticleAuthkit = ({ children }: React.PropsWithChildren) => {
   return (
     <AuthCoreContextProvider
       options={{
-        // These environment variables should be defined at runtime
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
         clientKey: process.env.NEXT_PUBLIC_CLIENT_KEY!,
         appId: process.env.NEXT_PUBLIC_APP_ID!,
 
-        chains: [sepolia, baseSepolia], // Configure the chains
+        chains: [sepolia, baseSepolia],
 
-        // Limit the available authentication types (remove the array to allow all)
         authTypes: [
           AuthType.email,
           AuthType.google,
@@ -133,19 +76,18 @@ export const ParticleAuthkit = ({ children }: React.PropsWithChildren) => {
           AuthType.discord,
           AuthType.phone,
         ],
-        themeType: "dark", // Set the theme to dark mode
+        themeType: "dark",
         fiatCoin: "USD",
         language: "en",
 
-        // Configure Smart Account settings
         erc4337: {
           name: "SIMPLE",
           version: "2.0.0",
         },
         wallet: {
-          visible: true, // Set to false to disable the embedded wallet modal
-          entryPosition: EntryPosition.TL, // Set the entry position of the wallet modal
-          customStyle: {}, // Add custom styling if needed
+          visible: true,
+          entryPosition: EntryPosition.TL,
+          customStyle: {},
         },
       }}
     >
@@ -155,13 +97,11 @@ export const ParticleAuthkit = ({ children }: React.PropsWithChildren) => {
 };
 ```
 
-### Key Changes in `AuthKit`
+> 🔑 Key change: Chains are now imported as Viem objects instead of the old format.
 
-- **Chain Imports**: Chains are now imported as `Viem` objects. This is a change from the previous `auth-core-modal` implementation.
+⸻
 
-### Step 3: Update `layout.tsx`
-
-Import the new `ParticleAuthkit` component into your `layout.tsx` file to integrate it across your app:
+### Step 3: Wrap Your App in `layout.tsx`
 
 ```tsx
 import type { Metadata } from "next";
@@ -192,11 +132,13 @@ export default function RootLayout({
 }
 ```
 
-### Step 4: Update `page.tsx` for Chain and Smart Account Configuration
+⸻
 
-Modify your `page.tsx` to import the necessary hooks and update the chain objects:
+### Step 4: Update page.tsx
 
-```tsx
+Update hooks and smart account configuration:
+
+```
 import {
   useEthereum,
   useConnect,
@@ -204,7 +146,6 @@ import {
 } from "@particle-network/authkit";
 import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
 
-// Set up and configure the Smart Account
 const smartAccount = new SmartAccount(provider, {
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
   clientKey: process.env.NEXT_PUBLIC_CLIENT_KEY!,
@@ -213,7 +154,7 @@ const smartAccount = new SmartAccount(provider, {
     accountContracts: {
       SIMPLE: [
         {
-          version: "2.0.0", // Supports versions 1.0.0 and 2.0.0
+          version: "2.0.0",
           chainIds: [sepolia.id, baseSepolia.id],
         },
       ],
@@ -221,75 +162,102 @@ const smartAccount = new SmartAccount(provider, {
   },
 });
 
-// UI Section Example
-
-<h3 className="text-lg mb-2 text-gray-400">
-  Chain: {chainInfo.name}
-</h3>
-
+// UI example
+<h3 className="text-lg mb-2 text-gray-400">Chain: {chainInfo.name}</h3>
 <TxNotification
   hash={transactionHash}
   blockExplorerUrl={chainInfo.blockExplorers?.default.url}
 />
 ```
+⸻
 
+### Configuring Social Logins
 
-### Config social logins
+```tsx
+Available options:
 
-List of available social logins:
-
-```sh
 {
-  email: 'email',
-  phone: 'phone',
-  facebook: 'facebook',
-  google: 'google',
-  apple: 'apple',
-  twitter: 'twitter',
-  discord: 'discord',
-  github: 'github',
-  twitch: 'twitch',
-  microsoft: 'microsoft',
-  linkedin: 'linkedin',
-  jwt: 'jwt'
+  "email": "email",
+  "phone": "phone",
+  "facebook": "facebook",
+  "google": "google",
+  "apple": "apple",
+  "twitter": "twitter",
+  "discord": "discord",
+  "github": "github",
+  "twitch": "twitch",
+  "microsoft": "microsoft",
+  "linkedin": "linkedin",
+  "jwt": "jwt"
 }
 ```
 
-### AA options
+⸻
 
-You can configure the smart account using the `aaOptions` object in `src/app/page.tsx`.
+Configuring Smart Accounts (aaOptions)
 
-- **BICONOMY**, a [Biconomy smart account](https://www.biconomy.io/smart-accounts).
-  - `version`, either `1.0.0` or `2.0.0`; both versions of Biconomy's smart account implementation are supported.
-  - `chainIds`, an array of chain IDs in which the smart account is expected to be used.
-- **CYBERCONNECT**, a [CyberConnect smart account](https://wallet.cyber.co/).
-  - `version`, currently only `1.0.0` is supported for `CYBERCONNECT`.
-  - `chainIds`, an array of chain IDs in which the smart account is expected to be used.
-- **SIMPLE**, a [SimpleAccount implementation](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/samples/SimpleAccount.sol).
-  - `version`, currently only `1.0.0` is supported for `SIMPLE`.
-  - `chainIds`, an array of chain IDs in which the smart account is expected to be used.
+Examples:
+	•	BICONOMY — versions 1.0.0 and 2.0.0 supported.
+	•	CYBERCONNECT — currently only 1.0.0.
+	•	SIMPLE — supports 1.0.0 and 2.0.0.
 
-```ts
-
+```tsx
 import { sepolia, baseSepolia } from "@particle-network/authkit/chains";
 
-  // Set up and configure the smart account
-  const smartAccount = new SmartAccount(provider, {
-    projectId: process.env.REACT_APP_PROJECT_ID!,
-    clientKey: process.env.REACT_APP_CLIENT_KEY!,
-    appId: process.env.REACT_APP_APP_ID!,
-    aaOptions: {
-      accountContracts: {
-        SIMPLE: [
-          {
-            version: "2.0.0",
-            chainIds: [sepolia.id, baseSepolia.id],
-          },
-        ],
-      },
+const smartAccount = new SmartAccount(provider, {
+  projectId: process.env.REACT_APP_PROJECT_ID!,
+  clientKey: process.env.REACT_APP_CLIENT_KEY!,
+  appId: process.env.REACT_APP_APP_ID!,
+  aaOptions: {
+    accountContracts: {
+      SIMPLE: [
+        {
+          version: "2.0.0",
+          chainIds: [sepolia.id, baseSepolia.id],
+        },
+      ],
     },
-  });
+  },
+});
 
-  // Use this syntax to upadate the smartAccount if you define more that one smart account provider in accountContracts
-  //smartAccount.setSmartAccountContract({ name: "SIMPLE", version: "1.0.0" });
- ```
+// Switch implementation if multiple contracts are defined
+// smartAccount.setSmartAccountContract({ name: "SIMPLE", version: "1.0.0" });
+```
+
+⸻
+
+##  Quickstart (Demo App)
+
+1. Clone the repository
+
+```sh
+git clone https://github.com/soos3d/particle-auth-aa-demo.git
+```
+
+2. Move into the app directory
+
+```sh
+cd particle-aa-nextjs
+```
+3. Install dependencies
+
+```
+yarn install
+# or
+npm install
+```
+
+4. Set environment variables
+
+Define the following in .env:
+	•	NEXT_PUBLIC_PROJECT_ID — from the Particle dashboard.
+	•	NEXT_PUBLIC_CLIENT_KEY — from the dashboard.
+	•	NEXT_PUBLIC_APP_ID — from the dashboard.
+
+5. Start the project
+
+```sh
+npm run dev
+# or
+yarn dev
+```
